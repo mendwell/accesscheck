@@ -5,23 +5,23 @@ import { useEffect, useMemo, useState } from "react";
 type Result = "pass" | "attention" | "unsure" | "na";
 type Answer = { result?: Result; note?: string };
 type Check = { id: string; title: string; prompt: string; measure?: string; why?: string; critical?: boolean };
-type Section = { id: string; name: string; short: string; time: string; intro: string; checks: Check[] };
+type Section = { id: string; name: string; short: string; intro: string; checks: Check[] };
 
 const sections: Section[] = [
   {
-    id: "parking", name: "Parking", short: "Park", time: "4 min",
+    id: "parking", name: "Parking", short: "Park",
     intro: "Begin at the parking space or passenger drop-off most likely to be used by a disabled visitor.",
     checks: [
       { id: "p1", title: "Accessible space is provided", prompt: "Is at least one marked accessible parking space available near the accessible entrance?", why: "People need a safe place to transfer from a vehicle and begin the accessible route.", critical: true },
       { id: "p2", title: "Van space is identified", prompt: "Is at least one accessible space marked “Van Accessible”?", measure: "Look for a mounted accessibility sign plus a van designation.", critical: true },
-      { id: "p3", title: "Space and aisle are wide enough", prompt: "Does the space have a clearly marked access aisle beside it?", measure: "Quick check: the aisle should be at least 5 ft wide; a van aisle is typically 8 ft, or 5 ft beside an 11 ft van space." },
-      { id: "p4", title: "Surface is firm and level", prompt: "Are the parking space and access aisle stable, slip-resistant, and nearly level?", measure: "A 2% level bubble or digital reading is the quick maximum-slope check." },
-      { id: "p5", title: "Aisle joins the route", prompt: "Can someone leave the access aisle without entering traffic and immediately reach the accessible route?", critical: true },
+      { id: "p3", title: "Space and aisle are wide enough", prompt: "Does the space have a clearly marked access aisle beside it? An access aisle is usually painted with hatching to deter parking.", measure: "Quick check: the aisle should be at least 5 ft wide; a van aisle is typically 8 ft, or 5 ft beside an 11 ft van space." },
+      { id: "p4", title: "Surface is firm and level", prompt: "Are the parking space and access aisle stable (preferably paved), slip-resistant, and nearly level?", measure: "A 2% level bubble or digital reading is the quick maximum-slope check." },
+      { id: "p5", title: "Aisle joins the route", prompt: "Can someone leave the access aisle without entering traffic and immediately reach the accessible route? How difficult is it to get from the parking space to the route?", critical: true },
     ],
   },
   {
-    id: "arrival", name: "Arrival route", short: "Route", time: "5 min",
-    intro: "Follow the actual path from parking or drop-off to the entrance. Assess the whole trip, not an isolated sidewalk segment.",
+    id: "arrival", name: "Arrival route", short: "Route", 
+    intro: "Follow the actual path from parking or drop-off to the entrance. Look at the whole trip, not an isolated sidewalk segment.",
     checks: [
       { id: "a1", title: "Continuous step-free route", prompt: "Is there a continuous route to the entrance with no stairs, curbs, or abrupt level changes?", critical: true },
       { id: "a2", title: "Route is wide enough", prompt: "Is the clear walking surface generally at least 36 inches wide?", measure: "Measure the narrowest point, allowing only short, limited pinch points." },
@@ -31,8 +31,8 @@ const sections: Section[] = [
     ],
   },
   {
-    id: "entrance", name: "Entrance", short: "Entry", time: "4 min",
-    intro: "Check the entrance a visitor is expected to use, including the doorway, hardware, threshold, and space on both sides.",
+    id: "entrance", name: "Entrance", short: "Entry",
+    intro: "Check the entrance a visitor is expected to use, including the doorway, hardware (the door handle), threshold, and space on both sides.",
     checks: [
       { id: "e1", title: "Accessible entrance is obvious", prompt: "Is the main entrance accessible, or do clear signs direct people to an equally usable accessible entrance?", critical: true },
       { id: "e2", title: "Door opening is clear", prompt: "Does at least one door provide a clear opening of 32 inches or more?", measure: "Open the door 90°. Measure from the door face to the stop—not jamb to jamb.", critical: true },
@@ -42,7 +42,7 @@ const sections: Section[] = [
     ],
   },
   {
-    id: "restrooms", name: "Restrooms", short: "Toilet", time: "7 min",
+    id: "restrooms", name: "Restrooms", short: "Toilet", 
     intro: "Check one public restroom intended to be accessible. If several serve the same area, note which one you reviewed.",
     checks: [
       { id: "r1", title: "Accessible restroom is available", prompt: "Is at least one accessible public restroom available, with direction signs if needed?", critical: true },
@@ -54,7 +54,7 @@ const sections: Section[] = [
     ],
   },
   {
-    id: "services", name: "Access to services", short: "Service", time: "5 min",
+    id: "services", name: "Access to services", short: "Service", 
     intro: "Travel from the entrance to the primary service, transaction, meeting, dining, or waiting area a visitor uses.",
     checks: [
       { id: "s1", title: "Services are on an accessible route", prompt: "Can a visitor reach the primary goods, services, and public spaces without stairs or blocked aisles?", critical: true },
@@ -128,10 +128,10 @@ export default function Home() {
 
       {screen === "welcome" && (
         <section className="welcome">
-          <div className="eyebrow">QUICK 20-MINUTE SITE REVIEW</div>
+          <div className="eyebrow">QUICK 20-MINUTE SITE CHECK-UP</div>
           <h1>Notice barriers.<br />Improve access.</h1>
-          <p className="lede">A guided tour of basic assessments of parking, arrival, entrance, restrooms, and access to services- written for people who are new to accessibility reviews.</p>
-          <div className="notice"><strong>This is a screening tool.</strong><span>It helps identify likely barriers. It is not a full ADA compliance determination or legal opinion.</span></div>
+          <p className="lede">A guided tour of a basic assessment of parking, arrival, entrance, restrooms, and access to services- written for people who are new to accessibility reviews.</p>
+          <div className="notice"><strong>This is a preliminary screening tool.</strong><span>It helps identify likely physical barriers to access. It is not a full ADA compliance determination or legal opinion.</span></div>
           <div className="siteForm">
             <label>Site name<input value={site.name} onChange={(e) => setSite({ ...site, name: e.target.value })} placeholder="Community Center" /></label>
             <label>Address or location<input value={site.address} onChange={(e) => setSite({ ...site, address: e.target.value })} placeholder="123 Main Street" /></label>
@@ -190,7 +190,7 @@ export default function Home() {
           <p className="sourceNote">Adapted as a preliminary screening aid from the 2010 ADA Standards-based “ADA Checklist for Existing Facilities” and U.S. Department of Justice polling place guidance. Consult the full standards and a qualified accessibility professional for compliance decisions.</p>
         </section>;
       })()}
-      <footer><span>AccessCheck</span><p>Quick screening for more welcoming places.</p></footer>
+      <footer><span>AccessCheck</span><br><p>Quick screening for more welcoming places.</p></br></footer>
     </main>
   );
 }
