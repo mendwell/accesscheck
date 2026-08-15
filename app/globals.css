@@ -14,7 +14,7 @@ button { color:inherit; }
 .welcome, .assessment, .summaryPage { width:min(100% - 32px, 720px); margin:0 auto; }
 .welcome { padding:52px 0 72px; }
 .eyebrow { color:var(--green); font-size:12px; font-weight:850; letter-spacing:.12em; text-transform:uppercase; }
-h1 { font-family:Georgia, "Times New Roman", serif; font-size:clamp(46px, 12vw, 76px); line-height:.98; letter-spacing:-.045em; margin:16px 0 24px; font-weight:500; }
+h1 { font-family:Open Sans; font-size:clamp(46px, 12vw, 76px); line-height:.98; letter-spacing:-.045em; margin:16px 0 24px; font-weight:500; }
 .lede { color:#3c4844; font-size:19px; line-height:1.55; margin:0 0 30px; max-width:640px; }
 .notice, .summaryNotice { border-left:4px solid var(--green); background:var(--green2); padding:17px 18px; display:flex; gap:8px; flex-direction:column; line-height:1.45; border-radius:0 10px 10px 0; }
 .notice span, .summaryNotice p { color:#40504a; margin:0; }
@@ -43,8 +43,8 @@ input:focus, textarea:focus { border-color:var(--green); box-shadow:0 0 0 3px rg
 .steps button.active span { background:var(--green); border-color:var(--green); color:white; }
 .steps button.done span { background:var(--green2); border-color:var(--green2); color:var(--green); }
 .sectionHead { display:flex; align-items:end; justify-content:space-between; }
-.sectionHead h2, .summaryPage h2 { font-family:Georgia, serif; font-weight:500; font-size:39px; letter-spacing:-.03em; margin:8px 0 0; }
-.sectionNumber { font-family:Georgia, serif; font-size:64px; color:#d9ddd8; line-height:.8; }
+.sectionHead h2, .summaryPage h2 { font-family:, serif; font-weight:500; font-size:39px; letter-spacing:-.03em; margin:8px 0 0; }
+.sectionNumber { font-family:Open Sans, serif; font-size:64px; color:#d9ddd8; line-height:.8; }
 .intro { font-size:16px; line-height:1.55; color:var(--muted); margin:20px 0 26px; }
 .checks { display:grid; gap:16px; }
 .checkCard { background:var(--card); border:1.5px solid #dcdedb; border-radius:14px; padding:20px; box-shadow:0 5px 20px rgba(28,42,36,.035); }
@@ -76,7 +76,7 @@ textarea { min-height:65px; resize:vertical; font-size:14px; font-weight:500; }
 .scoreGrid { display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); border-radius:13px; overflow:hidden; background:white; margin:24px 0; }
 .scoreGrid div { padding:18px 12px; display:grid; text-align:center; border-right:1px solid var(--line); }
 .scoreGrid div:last-child { border:0; }
-.scoreGrid strong { font-family:Georgia,serif; font-size:35px; font-weight:500; }
+.scoreGrid strong { font-family:Open Sans,serif; font-size:35px; font-weight:500; }
 .scoreGrid span { font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:800; }
 .scoreGrid .issueScore strong { color:var(--red); }
 .summaryNotice { margin:22px 0 40px; }
