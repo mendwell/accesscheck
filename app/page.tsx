@@ -128,9 +128,9 @@ export default function Home() {
 
       {screen === "welcome" && (
         <section className="welcome">
-          <div className="eyebrow">QUICK SITE REVIEW · ABOUT 25 MINUTES</div>
-          <h1>Notice barriers.<br />Plan better access.</h1>
-          <p className="lede">A guided walk-through of parking, arrival, entrance, restrooms, and access to services—written for people who are new to accessibility reviews.</p>
+          <div className="eyebrow">QUICK 20-MINUTE SITE REVIEW</div>
+          <h1>Notice barriers.<br />Improve access.</h1>
+          <p className="lede">A guided tour of basic assessments of parking, arrival, entrance, restrooms, and access to services- written for people who are new to accessibility reviews.</p>
           <div className="notice"><strong>This is a screening tool.</strong><span>It helps identify likely barriers. It is not a full ADA compliance determination or legal opinion.</span></div>
           <div className="siteForm">
             <label>Site name<input value={site.name} onChange={(e) => setSite({ ...site, name: e.target.value })} placeholder="Community Center" /></label>
