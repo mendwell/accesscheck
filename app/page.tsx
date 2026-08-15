@@ -152,7 +152,7 @@ export default function Home() {
           <nav className="steps" aria-label="Assessment sections">
             {sections.map((s, i) => <button key={s.id} className={i === sectionIndex ? "active" : i < sectionIndex ? "done" : ""} onClick={() => setSectionIndex(i)}><span>{i < sectionIndex ? "✓" : i + 1}</span>{s.short}</button>)}
           </nav>
-          <div className="sectionHead"><div><div className="eyebrow">SECTION {sectionIndex + 1} OF {sections.length} · {current.time}</div><h2>{current.name}</h2></div><div className="sectionNumber">0{sectionIndex + 1}</div></div>
+          <div className="sectionHead"><div><div className="eyebrow">SECTION {sectionIndex + 1} OF {sections.length}</div><h2>{current.name}</h2></div><div className="sectionNumber">0{sectionIndex + 1}</div></div>
           <p className="intro">{current.intro}</p>
           <div className="checks">
             {current.checks.map((q, index) => {
@@ -190,7 +190,7 @@ export default function Home() {
           <p className="sourceNote">Adapted as a preliminary screening aid from the 2010 ADA Standards-based “ADA Checklist for Existing Facilities” and U.S. Department of Justice polling place guidance. Consult the full standards and a qualified accessibility professional for compliance decisions.</p>
         </section>;
       })()}
-      <footer><span>AccessCheck</span><br><p>Quick screening for more welcoming places.</p></br></footer>
+      <footer><span>AccessCheck</span><p>Quick screening for more welcoming places.</p></footer>
     </main>
   );
 }
