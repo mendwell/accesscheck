@@ -140,7 +140,7 @@ export default function Home() {
               <label>Date<input type="date" value={site.date} onChange={(e) => setSite({ ...site, date: e.target.value })} /></label>
             </div>
           </div>
-          <button className="primary" onClick={() => { setScreen("assessment"); setSectionIndex(0); }}>{completed ? "Continue draft" : "Start the walk-through"}<span>→</span></button>
+          <button className="primary" onClick={() => { setScreen("assessment"); setSectionIndex(0); }}>{completed ? "Continue draft" : "Start the check-up"}<span>→</span></button>
           <div className="bring"><span>Bring</span><b>Tape measure</b><b>Phone level</b><b>Camera</b></div>
         </section>
       )}
