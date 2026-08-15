@@ -122,7 +122,7 @@ export default function Home() {
   return (
     <main>
       <header className="topbar">
-        <button className="brand" onClick={() => setScreen("welcome")} aria-label="AccessCheck home"><span>AC</span> AccessCheck</button>
+        <button className="brand" onClick={() => setScreen("welcome")} aria-label="AccessCheckUp home"><span>AC</span> AccessCheckUp</button>
         {screen !== "welcome" && <button className="textButton" onClick={reset}>New check</button>}
       </header>
 
@@ -130,7 +130,7 @@ export default function Home() {
         <section className="welcome">
           <div className="eyebrow">QUICK 20-MINUTE SITE CHECK-UP</div>
           <h1>Notice barriers.<br />Improve access.</h1>
-          <p className="lede">A guided tour of a basic assessment of parking, arrival, entrance, restrooms, and access to services- written for people who are new to accessibility reviews.</p>
+          <p className="lede">A guided tour of a basic assessment of physical barriers to parking, arrival, entrance, restrooms, and access to services- written for people who are new to accessibility reviews.</p>
           <div className="notice"><strong>This is a preliminary screening tool.</strong><span>It helps identify likely physical barriers to access. It is not a full ADA compliance determination or legal opinion.</span></div>
           <div className="siteForm">
             <label>Site name<input value={site.name} onChange={(e) => setSite({ ...site, name: e.target.value })} placeholder="Community Center" /></label>
