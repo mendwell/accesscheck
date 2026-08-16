@@ -63,6 +63,8 @@ input:focus, textarea:focus { border-color:var(--green); box-shadow:0 0 0 3px rg
 .priority { color:var(--red); background:var(--redbg); padding:5px 8px; font-size:10px; text-transform:uppercase; letter-spacing:.07em; border-radius:5px; font-weight:850; }
 .checkCard h3 { margin:11px 0 7px; font-size:20px; letter-spacing:-.015em; }
 .checkCard > p { color:#4e5955; line-height:1.48; margin:0 0 14px; }
+.citation { width:max-content; max-width:100%; display:inline-flex; align-items:center; flex-wrap:wrap; gap:5px; color:var(--green); font-size:11px; line-height:1.4; font-weight:750; text-underline-offset:3px; }
+.citation span { color:#5f6a66; font-size:9px; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; }
 details { margin:12px 0; }
 summary { color:var(--green); font-weight:800; cursor:pointer; font-size:13px; }
 details > div { padding:10px 13px; margin-top:7px; border-radius:7px; background:#f0f4f1; color:#45524d; font-size:13px; line-height:1.45; }
@@ -93,6 +95,7 @@ textarea { min-height:65px; resize:vertical; font-size:14px; font-weight:500; }
 .issueList article > span { width:27px; height:27px; border-radius:50%; background:var(--redbg); color:var(--red); font-weight:900; display:grid; place-items:center; flex:0 0 auto; }
 .issueList h3 { font-size:15px; margin:1px 0 5px; }
 .issueList p { font-size:13px; line-height:1.4; color:var(--muted); margin:0; }
+.issueList .citation { margin-top:7px; }
 .empty { padding:25px; border:1px dashed #b9c1bb; border-radius:10px; color:var(--muted); line-height:1.5; }
 .uncertain { background:white; border:1px solid var(--line); border-radius:10px; padding:15px; margin-top:18px; }
 .uncertain ul { color:var(--muted); line-height:1.7; font-size:14px; }
