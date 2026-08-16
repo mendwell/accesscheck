@@ -4,4 +4,4 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  PNPM_FLAGS = "--shamefully-hoist"
+  PNPM_FLAGS = "--shamefully-hoist --no-frozen-lockfile"

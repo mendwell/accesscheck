@@ -6,6 +6,8 @@ type Result = "pass" | "attention" | "unsure" | "na";
 type Answer = { result?: Result; note?: string };
 type Check = { id: string; title: string; prompt: string; measure?: string; why?: string; critical?: boolean };
 type Section = { id: string; name: string; short: string; intro: string; checks: Check[] };
+type CheckupRef = { id: string; token: string };
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 const sections: Section[] = [
   {
@@ -74,37 +76,142 @@ export default function Home() {
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [site, setSite] = useState({ name: "", address: "", reviewer: "", date: new Date().toISOString().slice(0, 10) });
   const [hydrated, setHydrated] = useState(false);
+  const [checkup, setCheckup] = useState<CheckupRef | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [submitted, setSubmitted] = useState(false);
+  const [lastSaved, setLastSaved] = useState<string>("");
   const allChecks = useMemo(() => sections.flatMap((s) => s.checks), []);
   const completed = allChecks.filter((q) => answers[q.id]?.result).length;
   const current = sections[sectionIndex];
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("access-check-draft");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setAnswers(parsed.answers || {});
-        setSite(parsed.site || site);
+    async function restore() {
+      try {
+        const hash = new URLSearchParams(window.location.hash.slice(1));
+        const id = hash.get("checkup");
+        const token = hash.get("token");
+        if (id && token) {
+          const response = await fetch(`/api/checkups/${encodeURIComponent(id)}`, { headers: { "X-Edit-Token": token } });
+          if (!response.ok) throw new Error("That private checkup link is invalid or has expired.");
+          const saved = await response.json();
+          setCheckup({ id, token });
+          setSite(saved.site || site);
+          setAnswers(saved.answers || {});
+          setSectionIndex(saved.section_index || 0);
+          setSubmitted(saved.status === "submitted");
+          setScreen(saved.status === "submitted" ? "summary" : "assessment");
+          setSaveState("saved");
+          setLastSaved(saved.updated_at || "");
+          return;
+        }
+
+        const local = localStorage.getItem("access-check-draft");
+        if (local) {
+          const saved = JSON.parse(local);
+          setAnswers(saved.answers || {});
+          setSite(saved.site || site);
+          setSectionIndex(saved.sectionIndex || 0);
+        }
+      } catch (error) {
+        setSaveState("error");
+        alert(error instanceof Error ? error.message : "The saved checkup could not be loaded.");
+      } finally {
+        setHydrated(true);
       }
-    } catch {}
-    setHydrated(true);
+    }
+    restore();
   }, []);
 
   useEffect(() => {
-    if (hydrated) localStorage.setItem("access-check-draft", JSON.stringify({ answers, site }));
-  }, [answers, site, hydrated]);
+    if (!hydrated) return;
+    localStorage.setItem("access-check-draft", JSON.stringify({ answers, site, sectionIndex }));
+    if (!checkup || submitted) return;
+
+    setSaveState("saving");
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/checkups/${encodeURIComponent(checkup.id)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "X-Edit-Token": checkup.token },
+          body: JSON.stringify({ site, answers, sectionIndex }),
+        });
+        if (!response.ok) throw new Error();
+        const saved = await response.json();
+        setSaveState("saved");
+        setLastSaved(saved.updated_at || new Date().toISOString());
+      } catch {
+        setSaveState("error");
+      }
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [answers, site, sectionIndex, checkup, submitted, hydrated]);
 
   function setResult(id: string, result: Result) {
     setAnswers((old) => ({ ...old, [id]: { ...old[id], result } }));
   }
 
   function reset() {
-    if (!confirm("Start a new assessment? This clears the current draft on this device.")) return;
+    if (!confirm("Start a new checkup? Your current checkup will remain available from its private resume link.")) return;
     setAnswers({});
     setSite({ name: "", address: "", reviewer: "", date: new Date().toISOString().slice(0, 10) });
     setSectionIndex(0);
+    setCheckup(null);
+    setSubmitted(false);
+    setSaveState("idle");
+    setLastSaved("");
     setScreen("welcome");
     localStorage.removeItem("access-check-draft");
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+
+  async function startCheckup() {
+    setSaveState("saving");
+    try {
+      const response = await fetch("/api/checkups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site, answers, sectionIndex: 0 }),
+      });
+      if (!response.ok) throw new Error();
+      const created = await response.json();
+      const next = { id: created.id as string, token: created.editToken as string };
+      setCheckup(next);
+      setSectionIndex(0);
+      setScreen("assessment");
+      setSaveState("saved");
+      setLastSaved(created.updated_at || new Date().toISOString());
+      history.replaceState(null, "", `${window.location.pathname}${window.location.search}#checkup=${encodeURIComponent(next.id)}&token=${encodeURIComponent(next.token)}`);
+      scrollTo(0, 0);
+    } catch {
+      setSaveState("error");
+      alert("We could not create a saved checkup. Your answers are still safe on this device; please try again.");
+    }
+  }
+
+  async function submitCheckup() {
+    if (!checkup || submitted) return;
+    if (!confirm("Submit this checkup? You will still be able to view it, but it can no longer be edited.")) return;
+    setSaveState("saving");
+    try {
+      const response = await fetch(`/api/checkups/${encodeURIComponent(checkup.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-Edit-Token": checkup.token },
+        body: JSON.stringify({ site, answers, sectionIndex, submit: true }),
+      });
+      if (!response.ok) throw new Error();
+      setSubmitted(true);
+      setSaveState("saved");
+      setLastSaved(new Date().toISOString());
+      localStorage.removeItem("access-check-draft");
+    } catch {
+      setSaveState("error");
+      alert("The checkup could not be submitted. Please try again.");
+    }
+  }
+
+  async function copyResumeLink() {
+    await navigator.clipboard.writeText(window.location.href);
+    alert(submitted ? "Private results link copied." : "Private resume link copied.");
   }
 
   function exportAssessment() {
@@ -140,13 +247,14 @@ export default function Home() {
               <label>Date<input type="date" value={site.date} onChange={(e) => setSite({ ...site, date: e.target.value })} /></label>
             </div>
           </div>
-          <button className="primary" onClick={() => { setScreen("assessment"); setSectionIndex(0); }}>{completed ? "Continue draft" : "Start the check-up"}<span>→</span></button>
+          <button className="primary" disabled={saveState === "saving"} onClick={startCheckup}>{saveState === "saving" ? "Creating saved checkup…" : completed ? "Save and continue draft" : "Start the check-up"}<span>→</span></button>
           <div className="bring"><span>Bring</span><b>Tape measure</b><b>Phone level</b><b>Camera</b></div>
         </section>
       )}
 
       {screen === "assessment" && (
         <section className="assessment">
+          <div className={`saveBar ${saveState}`}><span>{saveState === "saving" ? "Saving…" : saveState === "error" ? "Not saved — check your connection" : `Saved${lastSaved ? ` ${new Date(lastSaved).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}`}</span><button onClick={copyResumeLink}>Copy private resume link</button></div>
           <div className="progressMeta"><span>{completed} of {allChecks.length} checked</span><span>{Math.round((completed / allChecks.length) * 100)}%</span></div>
           <div className="progress"><i style={{ width: `${(completed / allChecks.length) * 100}%` }} /></div>
           <nav className="steps" aria-label="Assessment sections">
@@ -186,7 +294,8 @@ export default function Home() {
           <h2>Items to follow up</h2>
           {issues.length === 0 ? <div className="empty">No items are marked “needs attention.” Review the uncertain or unanswered checks before closing the assessment.</div> : <div className="issueList">{issues.map((q) => <article key={q.id}><span>!</span><div><h3>{q.title}</h3><p>{answers[q.id]?.note || q.prompt}</p></div></article>)}</div>}
           {unsure.length > 0 && <details className="uncertain"><summary>{unsure.length} uncertain or incomplete checks</summary><ul>{unsure.map((q) => <li key={q.id}>{q.title}</li>)}</ul></details>}
-          <div className="summaryActions"><button className="primary" onClick={exportAssessment}>Export results <span>↓</span></button><button className="secondary" onClick={() => window.print()}>Print / save PDF</button><button className="textButton" onClick={() => setScreen("assessment")}>Return to assessment</button></div>
+          <div className={`submissionNotice ${submitted ? "submitted" : ""}`}><strong>{submitted ? "Checkup submitted" : "Ready to submit?"}</strong><p>{submitted ? "This saved checkup is now read-only. Keep the private link to return to these results." : "Submitting locks this checkup so the saved results cannot be accidentally changed."}</p><button className="secondary" onClick={copyResumeLink}>{submitted ? "Copy private results link" : "Copy private resume link"}</button></div>
+          <div className="summaryActions">{!submitted && <button className="primary" disabled={saveState === "saving"} onClick={submitCheckup}>Submit checkup <span>✓</span></button>}<button className="secondary" onClick={exportAssessment}>Export results</button><button className="secondary" onClick={() => window.print()}>Print / save PDF</button>{!submitted && <button className="textButton" onClick={() => setScreen("assessment")}>Return to assessment</button>}</div>
           <p className="sourceNote">Adapted as a preliminary screening aid from the 2010 ADA Standards-based “ADA Checklist for Existing Facilities” and U.S. Department of Justice polling place guidance. Consult the full standards and a qualified accessibility professional for compliance decisions.</p>
         </section>;
       })()}
