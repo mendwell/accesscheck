@@ -10,7 +10,8 @@ button { color:inherit; }
 .topbar { height:70px; max-width:1040px; margin:auto; padding:0 22px; display:flex; align-items:center; justify-content:space-between; }
 .brand { border:0; background:none; display:flex; align-items:center; gap:10px; font-weight:850; font-size:17px; letter-spacing:-.025em; cursor:pointer; padding:0; }
 .brand img { width:36px; height:36px; display:block; }
-.brand > span > span { color:var(--green); }
+.brand > span { color:#063b78; }
+.brand > span > span { color:#08a7a3; }
 .textButton { border:0; background:none; text-decoration:underline; text-underline-offset:4px; font-weight:700; cursor:pointer; padding:10px; }
 .welcome, .assessment, .summaryPage { width:min(100% - 32px, 720px); margin:0 auto; }
 .welcome { padding:52px 0 72px; }
