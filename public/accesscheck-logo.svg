@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AccessCheckUp">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 64" role="img" aria-label="AccessCheckUp">
   <rect width="64" height="64" rx="15" fill="#155b48"/>
   <circle cx="22" cy="17" r="6" fill="#fff"/>
   <path d="M11 29c6-5 16-5 22 0M22 28v21M22 37l-8 12M22 37l7 12" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="m34 37 6 6 13-16" fill="none" stroke="#d9f36f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="78" y="42" fill="#17211e" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="31" font-weight="800" letter-spacing="-1.2">Access<tspan fill="#155b48">CheckUp</tspan></text>
 </svg>

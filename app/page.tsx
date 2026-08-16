@@ -122,7 +122,7 @@ export default function Home() {
   return (
     <main>
       <header className="topbar">
-        <button className="brand" onClick={() => setScreen("welcome")} aria-label="AccessCheckUp home"><span>AC</span> AccessCheckUp</button>
+        <button className="brand" onClick={() => setScreen("welcome")} aria-label="AccessCheckUp home"><img src="/accesscheck-mark.svg" alt="" /><span>Access<span>CheckUp</span></span></button>
         {screen !== "welcome" && <button className="textButton" onClick={reset}>New check</button>}
       </header>
 
@@ -190,7 +190,7 @@ export default function Home() {
           <p className="sourceNote">Adapted as a preliminary screening aid from the 2010 ADA Standards-based “ADA Checklist for Existing Facilities” and U.S. Department of Justice polling place guidance. Consult the full standards and a qualified accessibility professional for compliance decisions.</p>
         </section>;
       })()}
-      <footer><span>AccessCheck</span><p>Quick screening for more welcoming places.</p></footer>
+      <footer><span>AccessCheckUp</span><p>Quick screening for more welcoming places.</p></footer>
     </main>
   );
 }
