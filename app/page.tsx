@@ -7,10 +7,16 @@ type Answer = { result?: Result; note?: string };
 type Source = { label: string; sections: string; href: string };
 type Check = { id: string; title: string; prompt: string; measure?: string; why?: string; critical?: boolean; source: Source };
 type Section = { id: string; name: string; short: string; intro: string; checks: Check[] };
+type ModuleId = "physical" | "event" | "digital";
+type CheckupModule = {
+  id: ModuleId; number: string; name: string; description: string; meta: string; eyebrow: string; title: string; lede: string;
+  notice: string; subjectLabel: string; subjectPlaceholder: string; locationLabel: string; locationPlaceholder: string;
+  prep: string[]; sourceNote: string; sections: Section[];
+};
 type CheckupRef = { id: string; token: string };
 type SaveState = "idle" | "saving" | "saved" | "error";
 
-const sections: Section[] = [
+const physicalSections: Section[] = [
   {
     id: "parking", name: "Parking", short: "Park",
     intro: "Begin at the parking space or passenger drop-off most likely to be used by a disabled visitor.",
@@ -69,19 +75,131 @@ const sections: Section[] = [
   },
 ];
 
+const eventSections: Section[] = [
+  {
+    id: "event-planning", name: "Planning and requests", short: "Plan",
+    intro: "Start with the information people receive before the event and how your team will respond when access needs arise.",
+    checks: [
+      { id: "v1", title: "An accessibility contact is easy to find", prompt: "Do invitations and registration materials name a person or method for requesting disability-related accommodations?", critical: true, why: "Give people a direct, private way to describe what they need, and allow reasonable lead time without making advance notice an absolute condition of access.", source: { label: "ADA Effective Communication", sections: "Notice and requests", href: "https://www.ada.gov/resources/effective-communication/" } },
+      { id: "v2", title: "Access information is shared in advance", prompt: "Do event details explain accessible arrival, entrance, seating, restroom, and communication options?", why: "Specific information helps attendees plan independently and avoids forcing people to disclose a disability just to learn whether the event is usable.", source: { label: "ADA Web Guidance", sections: "Equal access to online services", href: "https://www.ada.gov/resources/web-guidance/" } },
+      { id: "v3", title: "Staff know how to respond", prompt: "Have event staff been told who handles access requests, where accessible features are, and how to get help without delaying the attendee?", critical: true, source: { label: "ADA Effective Communication", sections: "Choosing aids and services", href: "https://www.ada.gov/resources/effective-communication/" } },
+      { id: "v4", title: "Service animals are included", prompt: "Do event rules and staff practices allow service animals in areas open to attendees, without requiring certification or special identification?", source: { label: "ADA Service Animals", sections: "General rules", href: "https://www.ada.gov/topics/service-animals/" } },
+    ],
+  },
+  {
+    id: "event-arrival", name: "Arrival and venue", short: "Arrive",
+    intro: "Follow the attendee journey from the arrival point to registration, seating, activities, refreshments, and restrooms.",
+    checks: [
+      { id: "v5", title: "The event has a step-free route", prompt: "Can attendees travel from accessible parking or drop-off to every public event area without stairs, blocked paths, or abrupt level changes?", critical: true, source: { label: "2010 ADA Standards", sections: "§§ 206.2.1, 206.2.4, 402", href: "https://www.ada.gov/law-and-regs/design-standards/2010-stds/#206-accessible-routes" } },
+      { id: "v6", title: "Doors and aisles stay clear", prompt: "Are entrances and circulation paths wide enough and kept free of tables, cords, displays, and stored items?", measure: "Quick check: walking routes are generally 36 in minimum; door clear openings are generally 32 in minimum.", source: { label: "2010 ADA Standards", sections: "§§ 403.5.1, 404.2.3", href: "https://www.ada.gov/law-and-regs/design-standards/2010-stds/#403-walking-surfaces" } },
+      { id: "v7", title: "Seating offers real choices", prompt: "Are wheelchair spaces integrated with companion seating and available at more than one useful location or price level when applicable?", critical: true, source: { label: "2010 ADA Standards", sections: "§§ 221, 802", href: "https://www.ada.gov/law-and-regs/design-standards/2010-stds/#221-assembly-areas" } },
+      { id: "v8", title: "An accessible restroom is available", prompt: "Can attendees reach and use an accessible restroom without leaving the event area or taking an unreasonable route?", source: { label: "2010 ADA Standards", sections: "§§ 213, 603–606", href: "https://www.ada.gov/law-and-regs/design-standards/2010-stds/#213-toilet-facilities-and-bathing-facilities" } },
+    ],
+  },
+  {
+    id: "event-participation", name: "Participation", short: "Join",
+    intro: "Check whether people can take part in the event itself—not merely enter the room.",
+    checks: [
+      { id: "v9", title: "Registration and check-in are usable", prompt: "Can a seated attendee reach the check-in surface, complete required steps, and receive the same information as everyone else?", source: { label: "2010 ADA Standards", sections: "§§ 308, 309.4, 904.4", href: "https://www.ada.gov/law-and-regs/design-standards/2010-stds/#904-check-out-aisles-and-sales-and-service-counters" } },
+      { id: "v10", title: "Activities have an accessible option", prompt: "Can disabled attendees participate in the main activities, demonstrations, networking, and audience interaction without being separated or offered a lesser experience?", critical: true, source: { label: "ADA Title III Regulations", sections: "§ 36.302 Reasonable modifications", href: "https://www.ada.gov/law-and-regs/regulations/title-iii-regulations/#subpart-c" } },
+      { id: "v11", title: "Stages and presentation areas are reachable", prompt: "If attendees or presenters may use a stage or performance area, is there an accessible route to it?", source: { label: "2010 ADA Standards", sections: "§ 206.2.6", href: "https://www.ada.gov/law-and-regs/design-standards/2010-stds/#206-accessible-routes" } },
+      { id: "v12", title: "Food and service areas are usable", prompt: "Can attendees reach refreshments, dining surfaces, information tables, and service counters, with assistance available where self-service is not usable?", source: { label: "2010 ADA Standards", sections: "§§ 226, 902, 904", href: "https://www.ada.gov/law-and-regs/design-standards/2010-stds/#226-dining-surfaces-and-work-surfaces" } },
+    ],
+  },
+  {
+    id: "event-communication", name: "Communication", short: "Comms",
+    intro: "Review spoken, visual, printed, and emergency information. The right aid depends on the person and the communication involved.",
+    checks: [
+      { id: "v13", title: "Requested communication aids are arranged", prompt: "When needed, can the event provide appropriate aids such as qualified interpreters, real-time captions, large print, accessible electronic materials, or a reader?", critical: true, source: { label: "ADA Effective Communication", sections: "Auxiliary aids and services", href: "https://www.ada.gov/resources/effective-communication/" } },
+      { id: "v14", title: "Assistive listening is available", prompt: "Where amplified audible communication is integral to an assembly area, is an assistive listening system available and clearly identified?", source: { label: "2010 ADA Standards", sections: "§§ 216.10, 219, 706", href: "https://www.ada.gov/law-and-regs/design-standards/2010-stds/#219-assistive-listening-systems" } },
+      { id: "v15", title: "Presenters make information perceivable", prompt: "Are microphones used, important visuals described aloud, and essential spoken information also available visually when needed?", why: "One format rarely works for everyone. Match the aid or service to the nature and complexity of the communication and the attendee's usual method.", source: { label: "ADA Effective Communication", sections: "Effective communication provisions", href: "https://www.ada.gov/resources/effective-communication/" } },
+      { id: "v16", title: "Emergency messages reach everyone", prompt: "Can urgent instructions be communicated both audibly and visually, and do staff know how to assist attendees without separating them unnecessarily?", critical: true, source: { label: "ADA Effective Communication", sections: "Communication aids and services", href: "https://www.ada.gov/resources/effective-communication/" } },
+    ],
+  },
+];
+
+const digitalSections: Section[] = [
+  {
+    id: "digital-structure", name: "Structure and meaning", short: "Structure",
+    intro: "Review one important page or task. Start with whether its purpose and organization still make sense without relying on visual layout alone.",
+    checks: [
+      { id: "d1", title: "The page has a useful title", prompt: "Does the browser or document title identify the page's topic or purpose?", source: { label: "WCAG 2.2", sections: "SC 2.4.2 Page Titled", href: "https://www.w3.org/WAI/WCAG22/Understanding/page-titled.html" } },
+      { id: "d2", title: "Headings describe the content", prompt: "Do headings and labels clearly describe each section, and are heading levels used in a sensible order?", critical: true, source: { label: "WCAG 2.2", sections: "SC 1.3.1 and 2.4.6", href: "https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html" } },
+      { id: "d3", title: "Images have useful text alternatives", prompt: "Do meaningful images have concise alternative text, while decorative images are ignored by assistive technology?", critical: true, source: { label: "WCAG 2.2", sections: "SC 1.1.1 Non-text Content", href: "https://www.w3.org/WAI/WCAG22/Understanding/non-text-content.html" } },
+      { id: "d4", title: "Links make sense in context", prompt: "Can someone understand where each link goes from its link text and surrounding context, without vague labels such as “click here”?", source: { label: "WCAG 2.2", sections: "SC 2.4.4 Link Purpose", href: "https://www.w3.org/WAI/WCAG22/Understanding/link-purpose-in-context.html" } },
+    ],
+  },
+  {
+    id: "digital-visual", name: "Visual access", short: "Visual",
+    intro: "Check whether content remains readable for people with low vision, color-vision differences, or a need to magnify the interface.",
+    checks: [
+      { id: "d5", title: "Text contrast is strong enough", prompt: "Does regular text have sufficient contrast against its background, including text inside buttons and form controls?", measure: "Quick target: 4.5:1 for normal text and 3:1 for large text under WCAG AA.", critical: true, source: { label: "WCAG 2.2", sections: "SC 1.4.3 Contrast (Minimum)", href: "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html" } },
+      { id: "d6", title: "Meaning does not depend on color alone", prompt: "When color signals an error, status, required field, or selected item, is there also text, an icon, a pattern, or another cue?", source: { label: "WCAG 2.2", sections: "SC 1.4.1 Use of Color", href: "https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html" } },
+      { id: "d7", title: "Text can be enlarged", prompt: "Can text be zoomed to 200% without losing content or essential functionality?", source: { label: "WCAG 2.2", sections: "SC 1.4.4 Resize Text", href: "https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html" } },
+      { id: "d8", title: "The layout reflows when zoomed", prompt: "At a narrow mobile width or high zoom, can people read and operate the content without two-dimensional scrolling, clipping, or overlap?", critical: true, source: { label: "WCAG 2.2", sections: "SC 1.4.10 Reflow", href: "https://www.w3.org/WAI/WCAG22/Understanding/reflow.html" } },
+    ],
+  },
+  {
+    id: "digital-interaction", name: "Keyboard and interaction", short: "Interact",
+    intro: "Put the mouse or touchscreen aside and try the page using Tab, Shift+Tab, Enter, Space, and arrow keys where appropriate.",
+    checks: [
+      { id: "d9", title: "Everything works with a keyboard", prompt: "Can every interactive element and task be reached and operated without a mouse or touchscreen?", critical: true, source: { label: "WCAG 2.2", sections: "SC 2.1.1 Keyboard", href: "https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html" } },
+      { id: "d10", title: "Keyboard focus is easy to see", prompt: "As focus moves, is there a clear visible indicator showing which link, button, field, or control is active?", critical: true, source: { label: "WCAG 2.2", sections: "SC 2.4.7 Focus Visible", href: "https://www.w3.org/WAI/WCAG22/Understanding/focus-visible.html" } },
+      { id: "d11", title: "Focus is not hidden", prompt: "When a control receives keyboard focus, is it at least partly visible rather than covered by a sticky header, cookie banner, or modal?", source: { label: "WCAG 2.2", sections: "SC 2.4.11 Focus Not Obscured", href: "https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum.html" } },
+      { id: "d12", title: "Touch targets are large enough", prompt: "Are buttons, links, and other pointer targets reasonably sized and spaced so they are not easy to activate by mistake?", measure: "WCAG 2.2 AA generally calls for a 24 by 24 CSS pixel target or sufficient spacing, with specific exceptions.", source: { label: "WCAG 2.2", sections: "SC 2.5.8 Target Size (Minimum)", href: "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html" } },
+    ],
+  },
+  {
+    id: "digital-forms", name: "Forms, media, and feedback", short: "Complete",
+    intro: "Try the most important form or transaction and sample any audio or video that people need to understand.",
+    checks: [
+      { id: "d13", title: "Fields have persistent labels and instructions", prompt: "Does every form control have a clear label, with required formats or instructions provided before they are needed?", critical: true, source: { label: "WCAG 2.2", sections: "SC 1.3.1 and 3.3.2", href: "https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html" } },
+      { id: "d14", title: "Errors are identified and explained", prompt: "When a submission fails, does the interface identify the affected field and explain in text what needs to be corrected?", source: { label: "WCAG 2.2", sections: "SC 3.3.1 and 3.3.3", href: "https://www.w3.org/WAI/WCAG22/Understanding/error-identification.html" } },
+      { id: "d15", title: "Status changes are announced", prompt: "Do success messages, errors, loading updates, and changed results reach screen-reader users without unexpectedly moving focus?", source: { label: "WCAG 2.2", sections: "SC 4.1.3 Status Messages", href: "https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html" } },
+      { id: "d16", title: "Prerecorded video has captions", prompt: "Does prerecorded video with meaningful speech provide accurate synchronized captions, and is essential visual information described or otherwise available?", critical: true, source: { label: "WCAG 2.2", sections: "SC 1.2.2 and 1.2.5", href: "https://www.w3.org/WAI/WCAG22/Understanding/captions-prerecorded.html" } },
+    ],
+  },
+];
+
+const modules: Record<ModuleId, CheckupModule> = {
+  physical: {
+    id: "physical", number: "01", name: "Likely physical barriers", description: "Walk through parking, arrival, entrances, restrooms, and access to services.", meta: "About 20 minutes · 26 checks",
+    eyebrow: "QUICK 20-MINUTE SITE CHECK-UP", title: "Notice barriers. Improve access.", lede: "A quick, guided check for common physical barriers to accessibility—no experience required.",
+    notice: "It helps identify likely physical barriers to access. It is not a full ADA compliance determination or legal opinion.", subjectLabel: "Site name", subjectPlaceholder: "Community Center", locationLabel: "Address or location", locationPlaceholder: "123 Main Street", prep: ["Tape measure", "Phone level", "Camera"],
+    sourceNote: "Adapted as a preliminary screening aid from the 2010 ADA Standards-based ADA Checklist for Existing Facilities and U.S. Department of Justice polling place guidance. Consult the full standards and a qualified accessibility professional for compliance decisions.", sections: physicalSections,
+  },
+  event: {
+    id: "event", number: "02", name: "Event accessibility", description: "Review how people arrive, participate, communicate, and request accommodations.", meta: "About 15 minutes · 16 checks",
+    eyebrow: "QUICK EVENT ACCESSIBILITY CHECK-UP", title: "Plan for participation—not workarounds.", lede: "A guided check of the information, venue, activities, and communication that shape an accessible event.",
+    notice: "It flags common access gaps in event planning and delivery. Applicable duties and the right solution depend on the organizer, venue, event, and attendee's needs.", subjectLabel: "Event name", subjectPlaceholder: "Community Open House", locationLabel: "Venue or location", locationPlaceholder: "Civic Hall or online", prep: ["Event details", "Venue map", "Staff contact"],
+    sourceNote: "This preliminary screen draws from U.S. Department of Justice ADA guidance on effective communication, service animals, reasonable modifications, and the 2010 ADA Standards. It does not determine legal compliance or replace an individualized accommodation process.", sections: eventSections,
+  },
+  digital: {
+    id: "digital", number: "03", name: "Digital accessibility", description: "Check common barriers in websites, forms, documents, media, and interactions.", meta: "About 15 minutes · 16 checks",
+    eyebrow: "QUICK DIGITAL ACCESSIBILITY CHECK-UP", title: "Make the essential task work for more people.", lede: "A guided screen for common accessibility barriers on one important page, form, or digital experience.",
+    notice: "It samples high-impact WCAG 2.2 Level A and AA criteria. It is not a conformance audit and cannot replace testing with assistive technology and disabled users.", subjectLabel: "Website or product", subjectPlaceholder: "Registration website", locationLabel: "Page or URL", locationPlaceholder: "https://example.org/register", prep: ["Desktop browser", "Mobile device", "Keyboard"],
+    sourceNote: "This preliminary screen references WCAG 2.2 success criteria and U.S. Department of Justice web accessibility guidance. A complete evaluation requires broader automated and manual testing, assistive technology, and representative user testing.", sections: digitalSections,
+  },
+};
+
+const modulePreviews = Object.values(modules);
+
 const labels: Record<Result, string> = { pass: "Looks good", attention: "Needs attention", unsure: "Not sure", na: "Not applicable" };
 
 export default function Home() {
-  const [screen, setScreen] = useState<"welcome" | "assessment" | "summary">("welcome");
+  const [screen, setScreen] = useState<"landing" | "welcome" | "assessment" | "summary">("landing");
+  const [moduleId, setModuleId] = useState<ModuleId>("physical");
   const [sectionIndex, setSectionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
-  const [site, setSite] = useState({ name: "", address: "", reviewer: "", date: new Date().toISOString().slice(0, 10) });
+  const [site, setSite] = useState({ name: "", address: "", reviewer: "", date: new Date().toISOString().slice(0, 10), checkupType: "physical" as ModuleId });
   const [hydrated, setHydrated] = useState(false);
   const [checkup, setCheckup] = useState<CheckupRef | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [submitted, setSubmitted] = useState(false);
   const [lastSaved, setLastSaved] = useState<string>("");
-  const allChecks = useMemo(() => sections.flatMap((s) => s.checks), []);
+  const activeModule = modules[moduleId];
+  const sections = activeModule.sections;
+  const allChecks = useMemo(() => sections.flatMap((s) => s.checks), [sections]);
   const completed = allChecks.filter((q) => answers[q.id]?.result).length;
   const current = sections[sectionIndex];
 
@@ -95,8 +213,10 @@ export default function Home() {
           const response = await fetch(`/api/checkups/${encodeURIComponent(id)}`, { headers: { "X-Edit-Token": token } });
           if (!response.ok) throw new Error("That private checkup link is invalid or has expired.");
           const saved = await response.json();
+          const restoredModule = saved.site?.checkupType && saved.site.checkupType in modules ? saved.site.checkupType as ModuleId : "physical";
+          setModuleId(restoredModule);
           setCheckup({ id, token });
-          setSite(saved.site || site);
+          setSite({ ...site, ...(saved.site || {}), checkupType: restoredModule });
           setAnswers(saved.answers || {});
           setSectionIndex(saved.section_index || 0);
           setSubmitted(saved.status === "submitted");
@@ -109,8 +229,10 @@ export default function Home() {
         const local = localStorage.getItem("access-check-draft");
         if (local) {
           const saved = JSON.parse(local);
+          const restoredModule = saved.moduleId && saved.moduleId in modules ? saved.moduleId as ModuleId : "physical";
+          setModuleId(restoredModule);
           setAnswers(saved.answers || {});
-          setSite(saved.site || site);
+          setSite({ ...site, ...(saved.site || {}), checkupType: restoredModule });
           setSectionIndex(saved.sectionIndex || 0);
         }
       } catch (error) {
@@ -125,7 +247,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem("access-check-draft", JSON.stringify({ answers, site, sectionIndex }));
+    localStorage.setItem("access-check-draft", JSON.stringify({ answers, site, sectionIndex, moduleId }));
     if (!checkup || submitted) return;
 
     setSaveState("saving");
@@ -145,7 +267,7 @@ export default function Home() {
       }
     }, 900);
     return () => window.clearTimeout(timer);
-  }, [answers, site, sectionIndex, checkup, submitted, hydrated]);
+  }, [answers, site, sectionIndex, checkup, submitted, hydrated, moduleId]);
 
   function setResult(id: string, result: Result) {
     setAnswers((old) => ({ ...old, [id]: { ...old[id], result } }));
@@ -154,15 +276,29 @@ export default function Home() {
   function reset() {
     if (!confirm("Start a new checkup? Your current checkup will remain available from its private resume link.")) return;
     setAnswers({});
-    setSite({ name: "", address: "", reviewer: "", date: new Date().toISOString().slice(0, 10) });
+    setSite({ name: "", address: "", reviewer: "", date: new Date().toISOString().slice(0, 10), checkupType: "physical" });
+    setModuleId("physical");
     setSectionIndex(0);
     setCheckup(null);
     setSubmitted(false);
     setSaveState("idle");
     setLastSaved("");
-    setScreen("welcome");
+    setScreen("landing");
     localStorage.removeItem("access-check-draft");
     history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+
+  function chooseModule(nextModule: ModuleId) {
+    setModuleId(nextModule);
+    setAnswers({});
+    setSectionIndex(0);
+    setCheckup(null);
+    setSubmitted(false);
+    setSaveState("idle");
+    setLastSaved("");
+    setSite({ name: "", address: "", reviewer: "", date: new Date().toISOString().slice(0, 10), checkupType: nextModule });
+    setScreen("welcome");
+    scrollTo(0, 0);
   }
 
   async function startCheckup() {
@@ -217,7 +353,7 @@ export default function Home() {
 
   function exportAssessment() {
     const rows = allChecks.map((q) => ({ item: q.title, result: labels[answers[q.id]?.result || "unsure"], note: answers[q.id]?.note || "", source: `${q.source.label} ${q.source.sections}`, sourceUrl: q.source.href }));
-    const file = new Blob([JSON.stringify({ site, completedAt: new Date().toISOString(), results: rows }, null, 2)], { type: "application/json" });
+    const file = new Blob([JSON.stringify({ checkup: activeModule.name, site, completedAt: new Date().toISOString(), results: rows }, null, 2)], { type: "application/json" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(file);
     link.download = `${site.name || "accessibility-assessment"}-${site.date}.json`.replace(/[^a-z0-9.-]+/gi, "-").toLowerCase();
@@ -230,26 +366,50 @@ export default function Home() {
   return (
     <main>
       <header className="topbar">
-        <button className="brand" onClick={() => setScreen("welcome")} aria-label="AccessCheckUp home"><img src="/accesscheck-mark.svg" alt="" /><span>Access<span>CheckUp</span></span></button>
-        {screen !== "welcome" && <button className="textButton" onClick={reset}>New check</button>}
+        <button className="brand" onClick={() => setScreen("landing")} aria-label="AccessCheckUp home"><img src="/accesscheck-mark.svg" alt="" /><span>Access<span>CheckUp</span></span></button>
+        {screen !== "landing" && screen !== "welcome" && <button className="textButton" onClick={reset}>New check</button>}
       </header>
+
+      {screen === "landing" && (
+        <section className="landingPage">
+          <div className="landingHero">
+            <div className="eyebrow">QUICK ACCESSIBILITY CHECK-UPS</div>
+            <h1>Access starts with noticing what gets in the way.</h1>
+            <p className="lede">Accessibility helps more people participate independently and with dignity. A quick check can reveal barriers before they exclude someone.</p>
+          </div>
+          {checkup && <div className="currentCheckup"><div><span>{submitted ? "SAVED RESULTS" : "CHECK-UP IN PROGRESS"}</span><strong>{site.name || activeModule.name}</strong><p>{activeModule.name}</p></div><button onClick={() => setScreen(submitted ? "summary" : "assessment")}>{submitted ? "View results" : "Continue check-up"} →</button></div>}
+          <div className="whyGrid" aria-label="Why accessibility matters">
+            <div><strong>More participation</strong><p>Accessible places, events, and digital services welcome more people.</p></div>
+            <div><strong>More independence</strong><p>Good access lets people take part without unnecessary workarounds.</p></div>
+            <div><strong>Better experiences</strong><p>Clearer, more flexible experiences tend to work better for everyone.</p></div>
+          </div>
+          <div className="moduleHeading"><div><div className="eyebrow">CHOOSE A CHECK-UP</div><h2>What would you like to review?</h2></div><p>Each module is a guided preliminary screen—not a full compliance determination.</p></div>
+          <div className="moduleGrid">
+            {modulePreviews.map((module) => <article className="moduleCard" key={module.id}>
+              <span className="moduleNumber">{module.number}</span><h3>{module.name}</h3><p>{module.description}</p><div className="moduleMeta">{module.meta}</div>
+              <button className="moduleAction" onClick={() => chooseModule(module.id)}>Start this check-up<span>→</span></button>
+            </article>)}
+          </div>
+        </section>
+      )}
 
       {screen === "welcome" && (
         <section className="welcome">
-          <div className="eyebrow">QUICK 20-MINUTE SITE CHECK-UP</div>
-          <h1>Notice barriers.<br />Improve access.</h1>
-          <p className="lede">A quick, guided check for common physical barriers to accessibility - no experience required.</p>
-          <div className="notice"><strong>This is a preliminary screening tool.</strong><span>It helps identify likely physical barriers to access. It is not a full ADA compliance determination or legal opinion.</span></div>
+          <button className="backToModules" onClick={() => setScreen("landing")}>← All check-ups</button>
+          <div className="eyebrow">{activeModule.eyebrow}</div>
+          <h1>{activeModule.title}</h1>
+          <p className="lede">{activeModule.lede}</p>
+          <div className="notice"><strong>This is a preliminary screening tool.</strong><span>{activeModule.notice}</span></div>
           <div className="siteForm">
-            <label>Site name<input value={site.name} onChange={(e) => setSite({ ...site, name: e.target.value })} placeholder="Community Center" /></label>
-            <label>Address or location<input value={site.address} onChange={(e) => setSite({ ...site, address: e.target.value })} placeholder="123 Main Street" /></label>
+            <label>{activeModule.subjectLabel}<input value={site.name} onChange={(e) => setSite({ ...site, name: e.target.value })} placeholder={activeModule.subjectPlaceholder} /></label>
+            <label>{activeModule.locationLabel}<input value={site.address} onChange={(e) => setSite({ ...site, address: e.target.value })} placeholder={activeModule.locationPlaceholder} /></label>
             <div className="fieldRow">
               <label>Reviewer<input value={site.reviewer} onChange={(e) => setSite({ ...site, reviewer: e.target.value })} placeholder="Your name" /></label>
               <label>Date<input type="date" value={site.date} onChange={(e) => setSite({ ...site, date: e.target.value })} /></label>
             </div>
           </div>
           <button className="primary" disabled={saveState === "saving"} onClick={startCheckup}>{saveState === "saving" ? "Creating saved checkup…" : completed ? "Save and continue draft" : "Start the check-up"}<span>→</span></button>
-          <div className="bring"><span>Bring</span><b>Tape measure</b><b>Phone level</b><b>Camera</b></div>
+          <div className="bring"><span>Helpful</span>{activeModule.prep.map((item) => <b key={item}>{item}</b>)}</div>
         </section>
       )}
 
@@ -261,6 +421,7 @@ export default function Home() {
           <nav className="steps" aria-label="Assessment sections">
             {sections.map((s, i) => <button key={s.id} className={i === sectionIndex ? "active" : i < sectionIndex ? "done" : ""} onClick={() => setSectionIndex(i)}><span>{i < sectionIndex ? "✓" : i + 1}</span>{s.short}</button>)}
           </nav>
+          <div className="moduleContext"><span>{activeModule.name}</span></div>
           <div className="sectionHead"><div><div className="eyebrow">SECTION {sectionIndex + 1} OF {sections.length}</div><h2>{current.name}</h2></div><div className="sectionNumber">0{sectionIndex + 1}</div></div>
           <p className="intro">{current.intro}</p>
           <div className="checks">
@@ -274,7 +435,7 @@ export default function Home() {
                 <fieldset><legend>Choose a result for {q.title}</legend>
                   {(["pass", "attention", "unsure", "na"] as Result[]).map((r) => <button type="button" key={r} className={answer.result === r ? "selected" : ""} onClick={() => setResult(q.id, r)}><span>{r === "pass" ? "✓" : r === "attention" ? "!" : r === "unsure" ? "?" : "–"}</span>{labels[r]}</button>)}
                 </fieldset>
-                <label className="noteLabel">Note or measurement (optional)<textarea value={answer.note || ""} onChange={(e) => setAnswers((old) => ({ ...old, [q.id]: { ...old[q.id], note: e.target.value } }))} placeholder="e.g., doorway measured 29 in" /></label>
+                <label className="noteLabel">Note or observation (optional)<textarea value={answer.note || ""} onChange={(e) => setAnswers((old) => ({ ...old, [q.id]: { ...old[q.id], note: e.target.value } }))} placeholder={moduleId === "physical" ? "e.g., doorway measured 29 in" : "Add what you observed"} /></label>
               </article>;
             })}
           </div>
@@ -290,7 +451,7 @@ export default function Home() {
         const unsure = allChecks.filter((q) => answers[q.id]?.result === "unsure" || !answers[q.id]?.result);
         const passes = allChecks.filter((q) => answers[q.id]?.result === "pass");
         return <section className="summaryPage">
-          <div className="eyebrow">FIELD REVIEW SUMMARY</div><h1>{site.name || "Site assessment"}</h1><p className="summaryMeta">{site.address || "No address entered"} · {site.date}</p>
+          <div className="eyebrow">{activeModule.name.toUpperCase()} SUMMARY</div><h1>{site.name || `${activeModule.name} assessment`}</h1><p className="summaryMeta">{site.address || "No location entered"} · {site.date}</p>
           <div className="scoreGrid"><div className="issueScore"><strong>{issues.length}</strong><span>need attention</span></div><div><strong>{unsure.length}</strong><span>not sure / incomplete</span></div><div><strong>{passes.length}</strong><span>look good</span></div></div>
           <div className="summaryNotice"><strong>What this means</strong><p>Items marked “needs attention” are good candidates for closer review and barrier-removal planning. “Looks good” means no obvious barrier was found during this quick check—not that full compliance was verified.</p></div>
           <h2>Items to follow up</h2>
@@ -298,10 +459,10 @@ export default function Home() {
           {unsure.length > 0 && <details className="uncertain"><summary>{unsure.length} uncertain or incomplete checks</summary><ul>{unsure.map((q) => <li key={q.id}>{q.title}</li>)}</ul></details>}
           <div className={`submissionNotice ${submitted ? "submitted" : ""}`}><strong>{submitted ? "Checkup submitted" : "Ready to submit?"}</strong><p>{submitted ? "This saved checkup is now read-only. Keep the private link to return to these results." : "Submitting locks this checkup so the saved results cannot be accidentally changed."}</p><button className="secondary" onClick={copyResumeLink}>{submitted ? "Copy private results link" : "Copy private resume link"}</button></div>
           <div className="summaryActions">{!submitted && <button className="primary" disabled={saveState === "saving"} onClick={submitCheckup}>Submit checkup <span>✓</span></button>}<button className="secondary" onClick={exportAssessment}>Export results</button><button className="secondary" onClick={() => window.print()}>Print / save PDF</button>{!submitted && <button className="textButton" onClick={() => setScreen("assessment")}>Return to assessment</button>}</div>
-          <p className="sourceNote">Adapted as a preliminary screening aid from the 2010 ADA Standards-based “ADA Checklist for Existing Facilities” and U.S. Department of Justice polling place guidance. Consult the full standards and a qualified accessibility professional for compliance decisions.</p>
+          <p className="sourceNote">{activeModule.sourceNote}</p>
         </section>;
       })()}
-      <footer><span>AccessCheckUp</span><p>Quick screening for more welcoming places.</p></footer>
+      <footer><span>AccessCheckUp</span><p>Quick screening tools for more welcoming experiences.</p></footer>
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { getDatabase } from "@netlify/database";
 
-export type StoredSite = { name: string; address: string; reviewer: string; date: string };
+export type StoredSite = { name: string; address: string; reviewer: string; date: string; checkupType: "physical" | "event" | "digital" };
 export type StoredAnswer = { result?: "pass" | "attention" | "unsure" | "na"; note?: string };
 
 export type CheckupPayload = {
@@ -21,11 +21,12 @@ export function validatePayload(input: unknown): CheckupPayload | null {
 
   const siteValue = rawSite as Record<string, unknown>;
   const clean = (key: string, max: number) => typeof siteValue[key] === "string" ? siteValue[key].slice(0, max) : "";
-  const site = {
+  const site: StoredSite = {
     name: clean("name", 200),
     address: clean("address", 500),
     reviewer: clean("reviewer", 200),
     date: clean("date", 10),
+    checkupType: siteValue.checkupType === "event" || siteValue.checkupType === "digital" ? siteValue.checkupType : "physical",
   };
 
   const answers: Record<string, StoredAnswer> = {};
