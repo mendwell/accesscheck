@@ -374,7 +374,7 @@ export default function Home() {
         <section className="landingPage">
           <div className="landingHero">
             <div className="eyebrow">QUICK ACCESSIBILITY CHECK-UPS</div>
-            <h1>Access starts with noticing what gets in the way.</h1>
+            <h1>Notice barriers. Improve access.</h1>
             <p className="lede">Accessibility helps more people participate independently and with dignity. A quick check can reveal barriers before they exclude someone.</p>
           </div>
           {checkup && <div className="currentCheckup"><div><span>{submitted ? "SAVED RESULTS" : "CHECK-UP IN PROGRESS"}</span><strong>{site.name || activeModule.name}</strong><p>{activeModule.name}</p></div><button onClick={() => setScreen(submitted ? "summary" : "assessment")}>{submitted ? "View results" : "Continue check-up"} →</button></div>}
