@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AccessCheckUp logo mark">
-  <circle cx="22" cy="13" r="7" fill="#063b78"/>
-  <path d="M6 25 22 30l15-5M22 28v13M22 40 13 57M22 40l10 16" fill="none" stroke="#063b78" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="m39 37 6 6 13-17" fill="none" stroke="#08a7a3" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="22" cy="13" r="7" fill="#8069aa"/>
+  <path d="M6 25 22 30l15-5M22 28v13M22 40 13 57M22 40l10 16" fill="none" stroke="#8069aa" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m39 37 6 6 13-17" fill="none" stroke="#b89ee0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
