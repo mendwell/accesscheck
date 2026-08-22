@@ -1,4 +1,4 @@
-import { bodyTooLarge, database, hashEditToken, requestToken, validatePayload } from "@/lib/checkups";
+import { bodyTooLarge, hashEditToken, requestToken, supabaseRequest, validatePayload } from "@/lib/checkups";
 
 export const runtime = "nodejs";
 
@@ -11,13 +11,9 @@ export async function GET(request: Request, context: Context) {
   const token = requestToken(request);
   if (!uuidPattern.test(id) || !token) return Response.json({ error: "Checkup not found." }, { status: 404 });
 
-  const sql = database();
-  const rows = await sql`
-    SELECT id, site, answers, section_index, status, created_at, updated_at, submitted_at
-    FROM checkups
-    WHERE id = ${id}::uuid AND edit_token_hash = ${hashEditToken(token)}
-    LIMIT 1
-  ` as Array<Record<string, unknown>>;
+  const tokenHash = hashEditToken(token);
+  const response = await supabaseRequest(`checkups?select=id,site,answers,section_index,status,created_at,updated_at,submitted_at&id=eq.${id}&edit_token_hash=eq.${tokenHash}&limit=1`);
+  const rows = await response.json() as Array<Record<string, unknown>>;
   if (!rows[0]) return Response.json({ error: "Checkup not found." }, { status: 404 });
   return Response.json(rows[0]);
 }
@@ -32,24 +28,24 @@ export async function PUT(request: Request, context: Context) {
   const payload = validatePayload(raw);
   if (!payload) return Response.json({ error: "Invalid checkup data." }, { status: 400 });
   const submit = raw?.submit === true;
-  const sql = database();
-
-  const rows = await sql`
-    UPDATE checkups
-    SET site = ${JSON.stringify(payload.site)}::jsonb,
-        answers = ${JSON.stringify(payload.answers)}::jsonb,
-        section_index = ${payload.sectionIndex},
-        status = CASE WHEN ${submit} THEN 'submitted' ELSE status END,
-        submitted_at = CASE WHEN ${submit} THEN now() ELSE submitted_at END,
-        updated_at = now()
-    WHERE id = ${id}::uuid
-      AND edit_token_hash = ${hashEditToken(token)}
-      AND status = 'draft'
-    RETURNING id, status, updated_at, submitted_at
-  ` as Array<Record<string, unknown>>;
+  const tokenHash = hashEditToken(token);
+  const now = new Date().toISOString();
+  const response = await supabaseRequest(`checkups?id=eq.${id}&edit_token_hash=eq.${tokenHash}&status=eq.draft&select=id,status,updated_at,submitted_at`, {
+    method: "PATCH",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      site: payload.site,
+      answers: payload.answers,
+      section_index: payload.sectionIndex,
+      updated_at: now,
+      ...(submit ? { status: "submitted", submitted_at: now } : {}),
+    }),
+  });
+  const rows = await response.json() as Array<Record<string, unknown>>;
 
   if (!rows[0]) {
-    const existing = await sql`SELECT status FROM checkups WHERE id = ${id}::uuid AND edit_token_hash = ${hashEditToken(token)} LIMIT 1` as Array<Record<string, unknown>>;
+    const existingResponse = await supabaseRequest(`checkups?select=status&id=eq.${id}&edit_token_hash=eq.${tokenHash}&limit=1`);
+    const existing = await existingResponse.json() as Array<Record<string, unknown>>;
     if (existing[0]?.status === "submitted") return Response.json({ error: "This checkup has already been submitted." }, { status: 409 });
     return Response.json({ error: "Checkup not found." }, { status: 404 });
   }

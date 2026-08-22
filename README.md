@@ -10,7 +10,7 @@ The guided review covers:
 - public restrooms
 - access to primary goods and services
 
-It saves an in-progress assessment on the reviewer's device and produces a follow-up summary that can be exported as JSON or printed to PDF.
+It saves each assessment as a separate Supabase record and produces a follow-up summary that can be exported as JSON or printed to PDF.
 
 > AccessCheck is a preliminary screening aid. It does not provide a full ADA compliance determination or legal opinion.
 
@@ -29,13 +29,20 @@ Create a production build with:
 pnpm build
 ```
 
-## Production plan
+## Supabase setup
+
+1. Create a separate Supabase project for AccessCheckUp.
+2. Run `supabase/migrations/20260822090000_create_checkups.sql` in the Supabase SQL Editor.
+3. In Netlify, add `SUPABASE_URL` and `SUPABASE_SECRET_KEY` as environment variables. The secret key is server-only and must never use the `NEXT_PUBLIC_` prefix.
+4. Redeploy the site.
+
+Each checkup receives a new UUID and a hashed private edit token. The full token is only kept in the checkup's private URL. Submitted records become read-only through the application API. Row-level security blocks direct browser access to the table.
+
+## Production stack
 
 - GitHub: source control and change review
 - Netlify: branch previews and production hosting
-- Supabase: future authentication, shared organizations, assessments, answers, and optional photos
-
-The current release deliberately uses device-local storage. Supabase should be enabled only after deciding whether assessments belong to individual reviewers or shared organizations, because that choice controls row-level security.
+- Supabase: central assessment storage
 
 WordPress is not needed for the assessment workflow.
 

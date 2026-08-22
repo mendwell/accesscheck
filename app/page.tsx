@@ -226,15 +226,6 @@ export default function Home() {
           return;
         }
 
-        const local = localStorage.getItem("access-check-draft");
-        if (local) {
-          const saved = JSON.parse(local);
-          const restoredModule = saved.moduleId && saved.moduleId in modules ? saved.moduleId as ModuleId : "physical";
-          setModuleId(restoredModule);
-          setAnswers(saved.answers || {});
-          setSite({ ...site, ...(saved.site || {}), checkupType: restoredModule });
-          setSectionIndex(saved.sectionIndex || 0);
-        }
       } catch (error) {
         setSaveState("error");
         alert(error instanceof Error ? error.message : "The saved checkup could not be loaded.");
@@ -247,26 +238,31 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem("access-check-draft", JSON.stringify({ answers, site, sectionIndex, moduleId }));
     if (!checkup || submitted) return;
 
     setSaveState("saving");
+    const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch(`/api/checkups/${encodeURIComponent(checkup.id)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "X-Edit-Token": checkup.token },
           body: JSON.stringify({ site, answers, sectionIndex }),
+          signal: controller.signal,
         });
         if (!response.ok) throw new Error();
         const saved = await response.json();
         setSaveState("saved");
         setLastSaved(saved.updated_at || new Date().toISOString());
-      } catch {
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
         setSaveState("error");
       }
     }, 900);
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [answers, site, sectionIndex, checkup, submitted, hydrated, moduleId]);
 
   function setResult(id: string, result: Result) {
@@ -284,7 +280,6 @@ export default function Home() {
     setSaveState("idle");
     setLastSaved("");
     setScreen("landing");
-    localStorage.removeItem("access-check-draft");
     history.replaceState(null, "", window.location.pathname + window.location.search);
   }
 
@@ -321,7 +316,7 @@ export default function Home() {
       scrollTo(0, 0);
     } catch {
       setSaveState("error");
-      alert("We could not create a saved checkup. Your answers are still safe on this device; please try again.");
+      alert("We could not create a saved checkup. Please check your connection and try again.");
     }
   }
 
@@ -339,7 +334,6 @@ export default function Home() {
       setSubmitted(true);
       setSaveState("saved");
       setLastSaved(new Date().toISOString());
-      localStorage.removeItem("access-check-draft");
     } catch {
       setSaveState("error");
       alert("The checkup could not be submitted. Please try again.");

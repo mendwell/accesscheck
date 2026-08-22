@@ -1,5 +1,4 @@
 import { createHash, randomBytes } from "node:crypto";
-import { getDatabase } from "@netlify/database";
 
 export type StoredSite = { name: string; address: string; reviewer: string; date: string; checkupType: "physical" | "event" | "digital" };
 export type StoredAnswer = { result?: "pass" | "attention" | "unsure" | "na"; note?: string };
@@ -50,8 +49,31 @@ export function hashEditToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export function database() {
-  return getDatabase().sql;
+function supabaseConfig() {
+  const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Supabase is not configured.");
+  return { url, key };
+}
+
+export async function supabaseRequest(path: string, init: RequestInit = {}) {
+  const { url, key } = supabaseConfig();
+  const response = await fetch(`${url}/rest/v1/${path}`, {
+    ...init,
+    cache: "no-store",
+    headers: {
+      apikey: key,
+      "Content-Type": "application/json",
+      ...init.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    console.error("Supabase request failed", response.status, detail.slice(0, 500));
+    throw new Error("The checkup database is unavailable.");
+  }
+  return response;
 }
 
 export function requestToken(request: Request) {

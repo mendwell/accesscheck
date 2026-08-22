@@ -3,15 +3,15 @@
 ## First release
 
 - Mobile-first Next.js interface
-- Device-local draft saving, so a field review survives refreshes or poor connectivity
+- Supabase-backed draft and submission saving through server-only API routes
 - JSON export and print/PDF summary
-- No account or sensitive cloud data required for the prototype
+- Private edit links for anonymous reviewers; each checkup is a separate record
 
 ## Recommended production stack
 
 - **GitHub:** one private repository dedicated to AccessCheck
 - **Netlify:** preview deployments for branches and production hosting from `main`
-- **Supabase:** authentication, organizations, sites, assessments, answers, and optional photo storage
+- **Supabase:** central checkup storage now; authentication, organizations, and optional photo storage can be added later
 - **WordPress:** not recommended for the assessment workflow; use only later if a separate public content site is needed
 
-Before enabling Supabase, choose whether data belongs to individual reviewers or shared organizations. That decision determines row-level security and should not be guessed.
+The public Supabase roles have no direct table access. Netlify's server-side API verifies a private edit token before reading or updating a record. A future account model can add reviewer and organization ownership without exposing existing anonymous records.

@@ -1,4 +1,4 @@
-import { bodyTooLarge, createEditToken, database, hashEditToken, validatePayload } from "@/lib/checkups";
+import { bodyTooLarge, createEditToken, hashEditToken, supabaseRequest, validatePayload } from "@/lib/checkups";
 
 export const runtime = "nodejs";
 
@@ -10,12 +10,17 @@ export async function POST(request: Request) {
 
   const editToken = createEditToken();
   const tokenHash = hashEditToken(editToken);
-  const sql = database();
-  const rows = await sql`
-    INSERT INTO checkups (edit_token_hash, site, answers, section_index)
-    VALUES (${tokenHash}, ${JSON.stringify(payload.site)}::jsonb, ${JSON.stringify(payload.answers)}::jsonb, ${payload.sectionIndex})
-    RETURNING id, status, created_at, updated_at
-  ` as Array<Record<string, unknown>>;
+  const response = await supabaseRequest("checkups?select=id,status,created_at,updated_at", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      edit_token_hash: tokenHash,
+      site: payload.site,
+      answers: payload.answers,
+      section_index: payload.sectionIndex,
+    }),
+  });
+  const rows = await response.json() as Array<Record<string, unknown>>;
 
   return Response.json({ ...rows[0], editToken }, { status: 201 });
 }
