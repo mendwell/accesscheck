@@ -164,20 +164,20 @@ const digitalSections: Section[] = [
 const modules: Record<ModuleId, CheckupModule> = {
   physical: {
     id: "physical", number: "01", name: "Likely physical barriers", description: "Walk through parking, arrival, entrances, restrooms, and access to services.", meta: "About 20 minutes · 26 checks",
-    eyebrow: "QUICK 20-MINUTE SITE CHECK-UP", title: "Notice barriers. Improve access.", lede: "A quick, guided check for common physical barriers to accessibility—no experience required.",
+    eyebrow: "QUICK 20-MINUTE SITE CHECK-UP", title: "Likely physical barriers to access.", lede: "A quick, guided check for common physical barriers to accessibility—no experience required.",
     notice: "It helps identify likely physical barriers to access. It is not a full ADA compliance determination or legal opinion.", subjectLabel: "Site name", subjectPlaceholder: "Community Center", locationLabel: "Address or location", locationPlaceholder: "123 Main Street", prep: ["Tape measure", "Phone level", "Camera"],
     sourceNote: "Adapted as a preliminary screening aid from the 2010 ADA Standards-based ADA Checklist for Existing Facilities and U.S. Department of Justice polling place guidance. Consult the full standards and a qualified accessibility professional for compliance decisions.", sections: physicalSections,
   },
   event: {
     id: "event", number: "02", name: "Event accessibility", description: "Review how people arrive, participate, communicate, and request accommodations.", meta: "About 15 minutes · 16 checks",
     eyebrow: "QUICK EVENT ACCESSIBILITY CHECK-UP", title: "Plan for participation—not workarounds.", lede: "A guided check of the information, venue, activities, and communication that shape an accessible event.",
-    notice: "It flags common access gaps in event planning and delivery. Applicable duties and the right solution depend on the organizer, venue, event, and attendee's needs.", subjectLabel: "Event name", subjectPlaceholder: "Community Open House", locationLabel: "Venue or location", locationPlaceholder: "Civic Hall or online", prep: ["Event details", "Venue map", "Staff contact"],
+    notice: "It flags common access gaps in event planning and delivery, but is not a comprehensive event accessibility checklist. Applicable duties and the right solution depend on the organizer, venue, event, and needs of attendees.", subjectLabel: "Event name", subjectPlaceholder: "Community Open House", locationLabel: "Venue or location", locationPlaceholder: "Civic Hall or online", prep: ["Event details", "Venue map", "Staff contact"],
     sourceNote: "This preliminary screen draws from U.S. Department of Justice ADA guidance on effective communication, service animals, reasonable modifications, and the 2010 ADA Standards. It does not determine legal compliance or replace an individualized accommodation process.", sections: eventSections,
   },
   digital: {
     id: "digital", number: "03", name: "Digital accessibility", description: "Check common barriers in websites, forms, documents, media, and interactions.", meta: "About 15 minutes · 16 checks",
-    eyebrow: "QUICK DIGITAL ACCESSIBILITY CHECK-UP", title: "Make the essential task work for more people.", lede: "A guided screen for common accessibility barriers on one important page, form, or digital experience.",
-    notice: "It samples high-impact WCAG 2.2 Level A and AA criteria. It is not a conformance audit and cannot replace testing with assistive technology and disabled users.", subjectLabel: "Website or product", subjectPlaceholder: "Registration website", locationLabel: "Page or URL", locationPlaceholder: "https://example.org/register", prep: ["Desktop browser", "Mobile device", "Keyboard"],
+    eyebrow: "QUICK DIGITAL ACCESSIBILITY CHECK-UP", title: "Make your ideas accessible to everyone.", lede: "A guided check-up for common accessibility barriers of digital content and experiences.",
+    notice: "It references high-impact WCAG 2.2 Level A and AA criteria. It is not a conformance audit and cannot replace testing with assistive technology and disabled users.", subjectLabel: "Website or product", subjectPlaceholder: "Registration website", locationLabel: "Page or URL", locationPlaceholder: "https://example.org/register", prep: ["Desktop browser", "Mobile device", "Keyboard"],
     sourceNote: "This preliminary screen references WCAG 2.2 success criteria and U.S. Department of Justice web accessibility guidance. A complete evaluation requires broader automated and manual testing, assistive technology, and representative user testing.", sections: digitalSections,
   },
 };
