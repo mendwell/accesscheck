@@ -170,7 +170,7 @@ const modules: Record<ModuleId, CheckupModule> = {
   },
   event: {
     id: "event", number: "02", name: "Event accessibility", description: "Review how people arrive, participate, communicate, and request accommodations.", meta: "About 15 minutes · 16 checks",
-    eyebrow: "QUICK EVENT ACCESSIBILITY CHECK-UP", title: "Plan for participation—not workarounds.", lede: "A guided check of the information, venue, activities, and communication that shape an accessible event.",
+    eyebrow: "QUICK EVENT ACCESSIBILITY CHECK-UP", title: "Plan for participation—not workarounds.", lede: "A guided check-up of the information, venue, activities, and communication that shape an accessible event.",
     notice: "It flags common access gaps in event planning and delivery, but is not a comprehensive event accessibility checklist. Applicable duties and the right solution depend on the organizer, venue, event, and needs of attendees.", subjectLabel: "Event name", subjectPlaceholder: "Community Open House", locationLabel: "Venue or location", locationPlaceholder: "Civic Hall or online", prep: ["Event details", "Venue map", "Staff contact"],
     sourceNote: "This preliminary screen draws from U.S. Department of Justice ADA guidance on effective communication, service animals, reasonable modifications, and the 2010 ADA Standards. It does not determine legal compliance or replace an individualized accommodation process.", sections: eventSections,
   },
