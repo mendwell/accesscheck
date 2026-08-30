@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://access-checkup.netlify.app"),
   title: "AccessCheckUp — Quick Accessibility Check-ups",
-  description: "Guided preliminary check-ups for physical, event, and digital accessibility.",
+  description: "Guided preliminary check-ups for physical, event, digital, and voting accessibility.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   openGraph: {
     title: "AccessCheckUp — Quick Accessibility Check-ups",

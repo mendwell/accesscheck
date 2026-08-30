@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 
-export type StoredSite = { name: string; address: string; reviewer: string; date: string; checkupType: "physical" | "event" | "digital" };
-export type StoredAnswer = { result?: "pass" | "attention" | "unsure" | "na"; note?: string };
+export type StoredSite = { name: string; address: string; reviewer: string; email: string; volunteerHours: boolean; municipality: string; precinct: string; time: string; date: string; checkupType: "physical" | "event" | "digital" | "voting"; checklistVersion: string };
+export type StoredAnswer = { result?: "pass" | "attention" | "unsure" | "na"; note?: string; value?: string; selections?: string[]; questionTitle?: string };
 
 export type CheckupPayload = {
   site: StoredSite;
@@ -24,17 +24,26 @@ export function validatePayload(input: unknown): CheckupPayload | null {
     name: clean("name", 200),
     address: clean("address", 500),
     reviewer: clean("reviewer", 200),
+    email: clean("email", 320),
+    volunteerHours: siteValue.volunteerHours === true,
+    municipality: clean("municipality", 200),
+    precinct: clean("precinct", 100),
+    time: clean("time", 10),
     date: clean("date", 10),
-    checkupType: siteValue.checkupType === "event" || siteValue.checkupType === "digital" ? siteValue.checkupType : "physical",
+    checkupType: siteValue.checkupType === "event" || siteValue.checkupType === "digital" || siteValue.checkupType === "voting" ? siteValue.checkupType : "physical",
+    checklistVersion: clean("checklistVersion", 100),
   };
 
   const answers: Record<string, StoredAnswer> = {};
   for (const [id, rawAnswer] of Object.entries(rawAnswers)) {
-    if (!/^[a-z][0-9]+$/.test(id) || !rawAnswer || typeof rawAnswer !== "object") continue;
+    if (!/^[a-z]{1,3}[0-9]+$/.test(id) || !rawAnswer || typeof rawAnswer !== "object") continue;
     const answer = rawAnswer as Record<string, unknown>;
     const result = typeof answer.result === "string" && allowedResults.has(answer.result) ? answer.result as StoredAnswer["result"] : undefined;
     const note = typeof answer.note === "string" ? answer.note.slice(0, 2000) : undefined;
-    answers[id] = { ...(result ? { result } : {}), ...(note ? { note } : {}) };
+    const responseValue = typeof answer.value === "string" ? answer.value.slice(0, 500) : undefined;
+    const selections = Array.isArray(answer.selections) ? answer.selections.filter((item): item is string => typeof item === "string").slice(0, 20).map((item) => item.slice(0, 500)) : undefined;
+    const questionTitle = typeof answer.questionTitle === "string" ? answer.questionTitle.slice(0, 500) : undefined;
+    answers[id] = { ...(result ? { result } : {}), ...(note ? { note } : {}), ...(responseValue ? { value: responseValue } : {}), ...(selections?.length ? { selections } : {}), ...(questionTitle ? { questionTitle } : {}) };
   }
 
   const sectionIndex = Number.isInteger(value.sectionIndex) ? Math.min(4, Math.max(0, Number(value.sectionIndex))) : 0;
