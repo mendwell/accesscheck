@@ -193,7 +193,7 @@ const votingSections: Section[] = [
     id: "voting-inside", name: "Section Three - Inside the Polling Place", short: "Inside",
     intro: "Complete every item after entering the polling place.",
     checks: [
-      { id: "ri13", title: "Is there an accessible route from the voter entrance to the voting area (no steps and at least 36’ wide)?", responseType: "yesno", source: riSurveySource("Section Three, Question 13") },
+      { id: "ri13", title: "Is there an accessible route from the voter entrance to the voting area (no steps and at least 36 inches wide)?", responseType: "yesno", source: riSurveySource("Section Three, Question 13; source-document measurement typo corrected") },
       { id: "ri14", title: "Do the doors to the voting area have a clear width of at least 32 inches minimum when measured from the face of the door to the door jamb?", responseType: "yesno", source: riSurveySource("Section Three, Question 14") },
       { id: "ri15", title: "Is there an accessible voting booth? (a voting booth at wheelchair height.)", responseType: "yesno", source: riSurveySource("Section Three, Question 15") },
       { id: "ri16", title: "Is the ExpressVote terminal present and operational?", responseType: "yesno", source: riSurveySource("Section Three, Question 16") },
