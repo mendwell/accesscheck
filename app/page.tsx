@@ -216,7 +216,7 @@ const modules: Record<ModuleId, CheckupModule> = {
     id: "event", version: "2026.1", name: "Event accessibility", description: "Review how people arrive, participate, communicate, and request accommodations.", meta: "About 15 minutes · 16 checks",
     eyebrow: "QUICK EVENT ACCESSIBILITY CHECK-UP", title: "Plan for participation—not workarounds.", lede: "A guided check-up of the information, venue, activities, and communication that shape an accessible event.",
     notice: "It flags common access gaps in event planning and delivery, but is not a comprehensive event accessibility checklist. Applicable duties and the right solution depend on the organizer, venue, event, and needs of attendees.", subjectLabel: "Event name", subjectPlaceholder: "Community Open House", locationLabel: "Venue or location", locationPlaceholder: "Civic Hall or online", prep: ["Event details", "Venue map", "Staff contact"],
-    sourceNote: "This preliminary screen draws from U.S. Department of Justice ADA guidance on effective communication, service animals, reasonable modifications, and the 2010 ADA Standards. It does not determine legal compliance or replace an individualized accommodation process.", sections: eventSections,
+    sourceNote: "This preliminary screen draws from U.S. Department of Justice ADA guidance on effective communication, service animals, reasonable modifications, and the 2010 ADA Standards. It does not determine legal compliance or replace an individualized accommodation process.", sections: numberedSections(eventSections, "v", "e"),
   },
   digital: {
     id: "digital", version: "2026.1", name: "Digital accessibility", description: "Check common barriers in websites, forms, documents, media, and interactions.", meta: "About 15 minutes · 16 checks",
@@ -228,7 +228,7 @@ const modules: Record<ModuleId, CheckupModule> = {
     id: "voting", version: "2026-GCD-final", name: "Voting accessibility", description: "Survey accessibility at Rhode Island polling places using the complete 2026 GCD volunteer survey.", meta: "About 20 minutes · 20 questions",
     eyebrow: "RHODE ISLAND POLLING PLACE SURVEY", title: "2026 Volunteer On-Site Polling Place Survey", lede: "Record polling place accessibility observations using every item in the Rhode Island survey.",
     notice: "This module preserves the survey wording and is intended for volunteer observations. Record problems, issues, or barriers for follow-up by the appropriate election and accessibility officials.", subjectLabel: "Polling Place Name", subjectPlaceholder: "Polling place name", locationLabel: "Polling Place Address", locationPlaceholder: "Street address", prep: ["Survey instructions", "Tape measure", "Phone or watch"],
-    sourceNote: "Questions and checklist items are reproduced from the 2026 Volunteer On-Site Polling Place Survey prepared for Rhode Island polling place access reviews.", sections: votingSections,
+    sourceNote: "Questions and checklist items are reproduced from the 2026 Volunteer On-Site Polling Place Survey prepared for Rhode Island polling place access reviews.", sections: numberedSections(votingSections, "ri", "v"),
   },
 };
 
@@ -239,6 +239,23 @@ const yesNoLabels: Record<Result, string> = { pass: "Yes", attention: "No", unsu
 
 function blankSite(checkupType: ModuleId) {
   return { name: "", address: "", reviewer: "", email: "", volunteerHours: false, municipality: "", precinct: "", time: "", date: new Date().toISOString().slice(0, 10), checkupType, checklistVersion: modules[checkupType].version };
+}
+
+function numberedSections(sections: Section[], fromPrefix: string, toPrefix: string) {
+  return sections.map((section) => ({ ...section, checks: section.checks.map((question) => ({ ...question, id: question.id.replace(new RegExp(`^${fromPrefix}`), toPrefix) })) }));
+}
+
+function restoreLegacyAnswers(module: ModuleId, savedAnswers: Record<string, Answer>) {
+  const restored: Record<string, Answer> = {};
+  const physicalOffsets: Record<string, number> = { a: 5, e: 10, r: 15, s: 21 };
+  for (const [id, answer] of Object.entries(savedAnswers)) {
+    let nextId = id;
+    if (module === "event" && /^v\d+$/.test(id)) nextId = id.replace(/^v/, "e");
+    if (module === "voting" && /^ri\d+$/.test(id)) nextId = id.replace(/^ri/, "v");
+    if (module === "physical" && /^[aers]\d+$/.test(id)) nextId = `p${physicalOffsets[id[0]] + Number(id.slice(1))}`;
+    restored[nextId] = answer;
+  }
+  return restored;
 }
 
 function hasAnswer(question: Check, answer?: Answer) {
@@ -279,7 +296,7 @@ export default function Home() {
           setModuleId(restoredModule);
           setCheckup({ id, token });
           setSite((currentSite) => ({ ...currentSite, ...(saved.site || {}), checkupType: restoredModule }));
-          setAnswers(saved.answers || {});
+          setAnswers(restoreLegacyAnswers(restoredModule, saved.answers || {}));
           setSectionIndex(saved.section_index || 0);
           setSubmitted(saved.status === "submitted");
           setScreen(saved.status === "submitted" ? "summary" : "assessment");
@@ -492,10 +509,10 @@ export default function Home() {
           <div className="sectionHead"><div><div className="eyebrow">SECTION {sectionIndex + 1} OF {sections.length}</div><h2>{current.name}</h2></div><div className="sectionNumber">0{sectionIndex + 1}</div></div>
           <p className="intro">{current.intro}</p>
           <div className="checks">
-            {current.checks.map((q, index) => {
+            {current.checks.map((q) => {
               const answer = answers[q.id] || {};
               return <article className={`checkCard ${answer.result || ""}`} key={q.id}>
-                <div className="questionTop"><span className="questionNumber">{moduleId === "voting" ? q.id.replace("ri", "") : `${sectionIndex + 1}.${index + 1}`}</span>{q.critical && <span className="priority">Priority check</span>}</div>
+                <div className="questionTop"><span className="questionNumber">{q.id.toUpperCase()}</span>{q.critical && <span className="priority">Priority check</span>}</div>
                 <h3>{q.title}</h3>{q.prompt && <p>{q.prompt}</p>}
                 {q.source.href ? <a className="citation" href={q.source.href} target="_blank" rel="noreferrer" aria-label={`Source: ${q.source.label} ${q.source.sections}`}><span>Source</span> {q.source.label} {q.source.sections} ↗</a> : <div className="citation"><span>Source</span> {q.source.label} {q.source.sections}</div>}
                 {(q.measure || q.why) && <details><summary>Quick guidance</summary><div>{q.measure || q.why}</div></details>}
