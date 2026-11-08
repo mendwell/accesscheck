@@ -213,11 +213,13 @@ th { color:var(--green); font-size:10px; letter-spacing:.06em; text-transform:up
 .resultsMap .leaflet-popup-content-wrapper, .resultsMap .leaflet-popup-tip { background:var(--card); color:var(--ink); }
 .resultsMap .leaflet-popup-content { line-height:1.4; }
 .resultsMap .leaflet-popup-content p { margin:5px 0 0; color:var(--muted); }
+.accessibleMapMarker { width:32px !important; height:32px !important; margin:0 !important; border:0; background:transparent; }
+.accessibleMapMarker span { width:32px; height:32px; display:grid; place-items:center; border:3px solid #17131d; border-radius:50%; background:#d2bee9; color:#211829; font-size:13px; font-weight:950; box-shadow:0 2px 6px rgba(0,0,0,.45); }
 .emptyMap { min-height:300px; border:1px dashed #62566c; border-radius:14px; display:grid; place-content:center; text-align:center; gap:8px; color:var(--muted); }
 .emptyMap strong { color:var(--ink); font-size:20px; }
 .mapLegend { display:flex; flex-wrap:wrap; gap:14px; padding:12px 4px 32px; color:var(--muted); font-size:10px; }
 .mapLegend span { display:flex; align-items:center; gap:6px; }
-.mapLegend i { width:10px; height:10px; border-radius:50%; }
+.mapLegend i { width:22px; height:22px; display:grid; place-items:center; border:2px solid #17131d; border-radius:50%; background:#d2bee9; color:#211829; font-size:9px; font-style:normal; font-weight:950; }
 .resultsList { margin-top:20px; }
 .resultsListHead { display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--line); padding-bottom:12px; }
 .resultsListHead h2 { margin:0; font-size:28px; }

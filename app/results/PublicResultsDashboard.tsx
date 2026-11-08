@@ -5,6 +5,7 @@ import type { Map as LeafletMap } from "leaflet";
 import { moduleNames, type ModuleId, type PublicResult } from "@/lib/public-results";
 
 const moduleColors: Record<ModuleId, string> = { physical: "#b89ee0", event: "#82b6d9", digital: "#d0ae78", voting: "#d891a1" };
+const moduleCodes: Record<ModuleId, string> = { physical: "P", event: "E", digital: "D", voting: "V" };
 
 function ResultsMap({ results }: { results: PublicResult[] }) {
   const host = useRef<HTMLDivElement>(null);
@@ -29,14 +30,20 @@ function ResultsMap({ results }: { results: PublicResult[] }) {
         const point: [number, number] = [result.latitude, result.longitude];
         bounds.push(point);
         const score = result.score === null ? "Not scored" : `${result.score}% quick-check score`;
-        const marker = L.circleMarker(point, { radius: 10, fillColor: moduleColors[result.module], color: "#17131d", weight: 3, opacity: 1, fillOpacity: 0.92 });
+        const icon = L.divIcon({
+          className: "accessibleMapMarker",
+          html: `<span>${moduleCodes[result.module]}</span>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -18],
+        });
         const popup = document.createElement("div");
         const title = document.createElement("strong");
         title.textContent = result.locationName;
         const details = document.createElement("p");
         details.textContent = `${result.moduleName} · ${score}`;
         popup.append(title, details);
-        marker.bindPopup(popup).addTo(nextMap);
+        L.marker(point, { icon, title: `${result.moduleName}: ${result.locationName}` }).bindPopup(popup).addTo(nextMap);
       });
       if (bounds.length === 1) nextMap.setView(bounds[0], 13);
       if (bounds.length > 1) nextMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
@@ -75,7 +82,7 @@ export default function PublicResultsDashboard() {
     <nav className="resultsFilters" aria-label="Filter results by module"><button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All modules</button>{(Object.entries(moduleNames) as Array<[ModuleId, string]>).map(([id, name]) => <button key={id} className={filter === id ? "active" : ""} onClick={() => setFilter(id)}>{name}</button>)}</nav>
     <section className="publicStats" aria-label="Published results summary"><article><strong>{visible.length}</strong><span>published checkups</span></article><article><strong>{mapped.length}</strong><span>mapped locations</span></article><article><strong>{average === null ? "—" : `${average}%`}</strong><span>average quick-check score</span></article><article><strong>{attention}</strong><span>items needing attention</span></article></section>
     {mapped.length ? <ResultsMap results={mapped} /> : <div className="emptyMap"><strong>No mapped results in this view yet.</strong><span>Published digital checkups may appear in the list without a physical map point.</span></div>}
-    <div className="mapLegend">{(Object.entries(moduleNames) as Array<[ModuleId, string]>).map(([id, name]) => <span key={id}><i style={{ background: moduleColors[id] }} />{name}</span>)}</div>
+    <div className="mapLegend" aria-label="Map marker abbreviations">{(Object.entries(moduleNames) as Array<[ModuleId, string]>).map(([id, name]) => <span key={id}><i>{moduleCodes[id]}</i>{name}</span>)}</div>
     <section className="resultsList" aria-labelledby="published-results-heading"><div className="resultsListHead"><h2 id="published-results-heading">Published checkups</h2><span>{visible.length} result{visible.length === 1 ? "" : "s"}</span></div>{visible.length ? <div className="resultCards">{visible.map((result) => <article key={result.id} className="resultCard"><div><span className="resultModule" style={{ color: moduleColors[result.module] }}>{result.moduleName}</span><h3>{result.locationName}</h3><p>{result.locationDetail || (result.locationMode === "approximate" ? "Approximate location" : "Location approved for display")}</p><small>Reviewed {result.reviewDate ? new Date(`${result.reviewDate}`.includes("T") ? result.reviewDate : `${result.reviewDate}T12:00:00`).toLocaleDateString() : "date not provided"}{result.locationMode === "approximate" ? " · Approximate marker" : ""}</small></div><div className="resultScore"><strong>{result.score === null ? "—" : `${result.score}%`}</strong><span>quick-check score</span><small>{result.counts.pass} looked good · {result.counts.attention} need attention</small></div></article>)}</div> : <div className="resultsEmpty">No published checkups match this module yet.</div>}</section>
   </>;
 }
