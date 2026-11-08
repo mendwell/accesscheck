@@ -548,7 +548,7 @@ export default function Home() {
           <p className="sourceNote">{activeModule.sourceNote}</p>
         </section>;
       })()}
-      <footer><span>AccessCheckUp</span><p>Quick screening tools for more welcoming experiences.</p></footer>
+      <footer><span>AccessCheckUp</span><p>Quick screening tools for more welcoming experiences.</p><a href="/results">View public results</a></footer>
     </main>
   );
 }
